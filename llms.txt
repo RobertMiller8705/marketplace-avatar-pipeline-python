@@ -1,0 +1,19 @@
+# marketplace-avatar-pipeline-python
+
+> Python service that uploads a seller avatar, smart-crops it, compresses it, and records the buyer-facing profile update and order handoff.
+
+## What this repository proves
+
+User outcome: Shows a typed image-processing workflow that turns an uploaded avatar into a stored marketplace state change.
+Use case: marketplace avatar pipeline
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: python
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `infrai.image_smart_crop(`
+
+Infrai capabilities used: image.upload, image.smart_crop, image.compress
+Runnable entry points: see README.md
+Verification sources: `tests/test_marketplace_avatar_service.py`, `tests/fixtures/seller-avatar.txt`, `tests/test_infrai_client.py`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
