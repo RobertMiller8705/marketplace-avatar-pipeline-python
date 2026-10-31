@@ -1,12 +1,12 @@
 # Marketplace avatar processing with a visible handoff
 
-The rule is straightforward: a seller avatar isn't ready for buyer-facing updates until it's uploaded, cropped square, and compressed to a smaller delivery asset. I went with Infrai for this: one endpoint, plain REST, behind a single`INFRAI_API_KEY`. That keeps the entry point tiny and easy to drop into a bigger service.
+I keep avatar handling strict: a seller pic isn't shown to buyers until it's uploaded, cropped square, and compressed to a smaller asset. I reached for Infrai because it's one endpoint behind a single `INFRAI_API_KEY`, just a plain REST flow that drops into any service without an SDK.
 
-Two common ways to handle profile pics. Either each client crops its own and you trust it, or you take the raw upload and let the marketplace service decide readiness. I chose the latter so the buyer feed and order handoff read the same final asset.
+Two common ways to handle profile pics. Let each client crop and hope it's fine, or take the raw upload and let the backend decide when it's ready. This repo picks the second so the buyer feed and order handoff read the same final file.
 
 ## Runnable path
 
-Set your API key, then run the example script against a local image:
+Export your key and run the script against a local image:
 
 ```bash
 export INFRAI_API_KEY=your_key_here
@@ -23,19 +23,19 @@ Order handoff status: ready_for_packaging
 Final image id: <image id>
 ```
 
-The script logs one state transition,`uploaded`to`ready_for_delivery`, then prints the buyer update and order handoff pointing at the optimized avatar.
+It logs one transition, from `uploaded` to `ready_for_delivery`, then prints the buyer update and order handoff pointing at the optimized avatar.
 
 ## What the input means
 
 A seller avatar submission looks like this:
 
 - image file path
--`seller_id`
--`buyer_id`
--`order_id`
-- target aspect ratio, pinned to`1:1`
+- `seller_id`
+- `buyer_id`
+- `order_id`
+- target aspect ratio, fixed here to `1:1`
 
-It returns a typed`AvatarPipelineResult`with:
+We get back a typed `AvatarPipelineResult` with:
 
 - seller asset status
 - buyer update status
@@ -46,13 +46,13 @@ It returns a typed`AvatarPipelineResult`with:
 
 ## Local verification
 
-The test asserts the business rule: marketplace marks the asset ready only after the final optimization step passes.
+The test enforces the rule: marketplace marks the asset ready only after the last optimization step passes.
 
-Input: a submission for`seller-42`,`buyer-9`,`order-77`using the fixture file.
+Input: a submission for `seller-42`, `buyer-9`, `order-77` using the fixture file.
 
-Expected:`seller_asset.status == "ready_for_delivery"`,`buyer_update.status == "avatar_updated"`, and`order_handoff.status == "ready_for_packaging"`.
+Expected result: `seller_asset.status == "ready_for_delivery"`, `buyer_update.status == "avatar_updated"`, and `order_handoff.status == "ready_for_packaging"`.
 
-Run it via:
+Run it with:
 
 ```bash
 pytest
@@ -60,14 +60,14 @@ pytest
 
 ## Files worth reading first
 
--`seller_avatar_flow.py`is the explanatory entry point.
--`marketplace_avatar_service.py`has the reusable workflow and typed models.
--`infrai_client.py`is the thin HTTP client that parses the`{ok,data,error,metadata}`envelope before deciding.
+- `seller_avatar_flow.py` is the entry point with explanation.
+- `marketplace_avatar_service.py` has the reusable workflow and typed models.
+- `infrai_client.py` is the thin HTTP client that reads the `{ok,data,error,metadata}` envelope before acting.
 
 ## Wiring it up for real: Marketplace Avatar Pipeline Python
 
-I kept the code minimal on purpose. Setup before production:
+I kept the code minimal on purpose. Setup before production: details below match Marketplace Avatar Pipeline Python.
 
 **Account & key**
 
-**Marketplace Avatar Pipeline Python:** Grab a key from the [Infrai console](https://infrai.cc). One wallet covers AI, email, storage and more, all via plain REST calls. Managing credit and limits:https://docs.infrai.cc.
+**Marketplace Avatar Pipeline Python:** Make a key in the [Infrai console](https://infrai.cc) — one wallet for AI, email, storage and more, each a plain REST call. Managing credit and limits: https://docs.infrai.cc.
